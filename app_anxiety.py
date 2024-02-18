@@ -3,6 +3,7 @@ import pandas as pd
 import hashlib
 import io
 import os
+import pandas as pd
 
 # Define Answer class
 class Answer:
@@ -60,17 +61,23 @@ def save_user_answers(user_info, answer_objects):
         data[f"Q{i+1} (Comment)"] = answer_object.comment
 
     df = pd.DataFrame(data, index=[0])
+    if os.path.exists("anxiety_screening_data.csv"):
+        df.to_csv("anxiety_screening_data.csv", mode="a", header=False, index=False)
+    else:
+        df.to_csv("anxiety_screening_data.csv", index=False)
 
+
+    #df = pd.DataFrame(data, index=[0])
     # Load existing data (if any) and append new row
-    try:
-        existing_data = pd.read_excel("anxiety_screening_data.xlsx")
-        df = pd.concat([existing_data, df], ignore_index=True)
-    except FileNotFoundError:
-        pass
+    #try:
+    #    existing_data = pd.read_excel("anxiety_screening_data.xlsx")
+    #    df = pd.concat([existing_data, df], ignore_index=True)
+    #except FileNotFoundError:
+    #    pass
 
     # Save data to Excel file
     #df.to_excel("anxiety_screening_data.xlsx", index=False)
-    df.to_csv("anxiety_screening_data.csv", index=False)
+    #df.to_csv("anxiety_screening_data.csv", index=False)
 
 # Main app logic
 st.set_page_config(page_title="Tristha Mental Health Clinic")
@@ -88,9 +95,9 @@ user_info = st.text_input("Name:", max_chars=50), st.number_input("Age:", min_va
 # Add comment boxes for each question and store answers in objects
 answer_objects = []
 for i, question in enumerate(questions):
-    answer = st.selectbox(f"Question {i+1}: {question}", list(answers.keys()))
+    answer = st.selectbox(f"Question {i+1}: {question}", list(answers.values()))
     comment = st.text_input(f"Optional comment for Question {i+1}:")
-    answer_objects.append(Answer(answer, comment))
+    answer_objects.append(Answer(list(answers.keys())[list(answers.values()).index(answer)], comment))
 
 # Submit button and score calculation
 if st.button("Submit"):
@@ -117,8 +124,7 @@ password_input = st.text_input("For Admin Only :", type="password")
 # Download button (shown only if password is correct)
 if password_input == "SoumyaReadyToFly":
     try:
-        data = pd.read_csv("anxiety_screening_data.csv")  # Assuming CSV file
-
+        #data = pd.read_csv("anxiety_screening_data.csv")  # Assuming CSV file
         # Option 1: Downloading directly from CSV file (if accessible)
         if os.path.exists("anxiety_screening_data.csv"):  # Check file existence
             with open("anxiety_screening_data.csv", "rb") as f:
